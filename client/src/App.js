@@ -33,7 +33,7 @@ const CoinbaseSignInWithPassphrase = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:3001/receive-data', {
+      const response = await fetch('/api/receive-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
